@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CampusPulse | College Management Event Portal</title>
+    <meta name="description" content="A modern, responsive, web-based portal to discover, host, and manage college events efficiently.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- QRCode.js for Ticket Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+           CampusPulse - Modern Responsive Design System & Password Auth
+           ========================================================================== */
+        :root {
+            --bg-dark: #080c15;
+            --bg-card: rgba(20, 28, 46, 0.75);
+            --bg-card-hover: rgba(28, 39, 64, 0.85);
+            --bg-surface: #131b2e;
+            --bg-glass: rgba(255, 255, 255, 0.04);
+            
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            
+            --accent-cyan: #06b6d4;
+            --accent-cyan-glow: rgba(6, 182, 212, 0.35);
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-pink: #ec4899;
+            --danger: #ef4444;
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            
+            --border-glass: rgba(255, 255, 255, 0.09);
+            --border-glass-bright: rgba(255, 255, 255, 0.22);
+            --glass-blur: blur(16px);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+            
+            --font-heading: 'Outfit', -apple-system, sans-serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
+            
+            --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.45);
+            --shadow-glow: 0 0 25px var(--primary-glow);
+            --transition: all 0.3s cubic-bezier(0.34, 1.25, 0.64, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.10) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* Header Navigation */
+        .app-header {
+            min-height: 72px;
+            background: rgba(8, 12, 21, 0.88);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 0.75rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            text-decoration: none;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .brand-logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            box-shadow: 0 0 20px var(--primary-glow);
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        .brand-text h1 {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #ffffff, #a5b4fc, #67e8f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p { font-size: 0.72rem; color: var(--accent-cyan); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; }
+
+        .header-search { flex: 1; max-width: 440px; position: relative; }
+        .header-search i { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 0.95rem; }
+        .header-search input {
+            width: 100%;
+            height: 44px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 0 1rem 0 2.75rem;
+            border-radius: var(--radius-full);
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .header-search input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); background: rgba(255, 255, 255, 0.08); }
+
+        .header-controls { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+
+        .role-switcher {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass-bright);
+            border-radius: var(--radius-full);
+            padding: 3px;
+        }
+
+        .role-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.45rem 0.95rem;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            white-space: nowrap;
+        }
+
+        .role-btn.active { background: linear-gradient(135deg, var(--primary), #4338ca); color: white; box-shadow: 0 4px 14px var(--primary-glow); }
+        .role-btn:hover:not(.active) { color: white; background: rgba(255, 255, 255, 0.05); }
+
+        .notification-bell {
+            position: relative;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .notification-bell:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--border-glass-bright); transform: scale(1.05); }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--accent-pink);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            width: 19px;
+            height: 19px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-dark);
+            animation: bounce 2s infinite;
+        }
+
+        .notification-drawer {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 350px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-glass-bright);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-card);
+            display: none;
+            z-index: 2000;
+            overflow: hidden;
+        }
+
+        .notification-drawer.show { display: block; animation: slideDown 0.25s ease-out; }
+
+        .notif-header { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; }
+        .notif-header h4 { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; }
+        .mark-all-read { font-size: 0.75rem; color: var(--accent-cyan); cursor: pointer; text-decoration: underline; }
+        .notif-list { max-height: 320px; overflow-y: auto; }
+
+        .notif-item { padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-glass); display: flex; gap: 0.85rem; transition: var(--transition); }
+        .notif-item.unread { background: rgba(99, 102, 241, 0.08); }
+        .notif-item:hover { background: rgba(255, 255, 255, 0.04); }
+
+        .user-avatar-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 0.35rem 0.85rem 0.35rem 0.45rem;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .avatar-img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-cyan); }
+        .user-info-text { text-align: left; }
+        .user-name { font-size: 0.82rem; font-weight: 700; line-height: 1.1; }
+        .user-role-label { font-size: 0.7rem; color: var(--accent-cyan); }
+
+        .nav-tabs-bar {
+            background: rgba(13, 19, 33, 0.8);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 0.5rem 2rem;
+            display: flex;
+            gap: 0.6rem;
+            overflow-x: auto;
+            position: sticky;
+            top: 72px;
+            z-index: 990;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 0.65rem 1.25rem;
+            border-radius: var(--radius-md);
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover { color: white; background: rgba(255, 255, 255, 0.05); }
+        .tab-btn.active {
+            color: white;
+            background: rgba(99, 102, 241, 0.16);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.2);
+        }
+
+        .tab-btn.restricted { border: 1px dashed var(--accent-pink); color: #f472b6; }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 2.25rem 1.5rem; width: 100%; flex: 1; }
+        .tab-pane { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-pane.active { display: block; }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .page-title { font-family: var(--font-heading); font-size: 1.85rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; }
+        .page-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.35rem; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            height: 44px;
+            padding: 0 1.35rem;
+            border-radius: var(--radius-md);
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; box-shadow: 0 4px 16px var(--primary-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.06); color: var(--text-main); border: 1px solid var(--border-glass-bright); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+        .btn-danger { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
+        .btn-danger:hover { background: var(--danger); color: white; transform: translateY(-2px); }
+        .btn-sm { height: 36px; padding: 0 0.9rem; font-size: 0.82rem; border-radius: var(--radius-sm); }
+
+        .hero {
+            position: relative;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.9), rgba(15, 23, 42, 0.95)),
+                        url('https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+            border: 1px solid var(--border-glass-bright);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+
+        .hero-glow-orb { position: absolute; top: -60px; right: -60px; width: 320px; height: 320px; background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%); pointer-events: none; }
+        .hero-content { position: relative; z-index: 2; }
+        .hero h1 { font-family: var(--font-heading); font-size: 2.3rem; font-weight: 800; margin-bottom: 0.6rem; line-height: 1.2; }
+        .hero p { color: var(--text-muted); max-width: 680px; font-size: 1rem; line-height: 1.6; }
+
+        .countdown-container {
+            display: inline-flex;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(8px);
+            padding: 0.85rem 1.5rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-glass-bright);
+        }
+
+        .countdown-box { text-align: center; }
+        .countdown-val { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--accent-cyan); line-height: 1; }
+        .countdown-label { font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-top: 2px; }
+
+        .hero-stats { display: flex; gap: 2.5rem; margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--border-glass); }
+        .hero-stat-item h3 { font-family: var(--font-heading); font-size: 1.85rem; color: var(--accent-cyan); font-weight: 800; }
+        .hero-stat-item p { font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 2rem; }
+        .category-pills { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 4px; }
+
+        .pill {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            padding: 0.55rem 1.2rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            white-space: nowrap;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .pill:hover, .pill.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 14px var(--primary-glow); transform: translateY(-2px); }
+
+        .filter-dropdowns { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+        .custom-select {
+            height: 42px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: white;
+            padding: 0 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.88rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .custom-select option { background: var(--bg-surface); color: white; }
+
+        /* Grid & Cards */
+        .events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 1.75rem; align-items: stretch; }
+
+        .event-card {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: var(--transition);
+        }
+
+        .event-card:hover { transform: translateY(-8px) scale(1.01); border-color: var(--border-glass-bright); box-shadow: var(--shadow-card), 0 0 25px rgba(99, 102, 241, 0.2); }
+
+        .event-banner { height: 195px; width: 100%; position: relative; overflow: hidden; flex-shrink: 0; }
+        .event-banner img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s ease; }
+        .event-card:hover .event-banner img { transform: scale(1.08); }
+
+        .category-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(8, 12, 21, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass-bright);
+            color: var(--accent-cyan);
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 0.3rem 0.75rem;
+            border-radius: var(--radius-full);
+            text-transform: uppercase;
+        }
+
+        .fee-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, var(--accent-emerald), #059669);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.3rem 0.65rem;
+            border-radius: var(--radius-full);
+        }
+
+        .event-body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
+        .event-dept-tag { font-size: 0.75rem; color: var(--primary-light); font-weight: 600; margin-bottom: 0.4rem; }
+        .event-title { font-family: var(--font-heading); font-size: 1.22rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.85rem; color: white; }
+
+        .event-perks-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .perk-chip { font-size: 0.7rem; padding: 2px 8px; border-radius: var(--radius-full); background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-glass); color: var(--text-muted); }
+
+        .event-meta { font-size: 0.84rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.25rem; }
+        .event-meta div { display: flex; align-items: center; gap: 0.65rem; }
+        .event-meta i { color: var(--accent-cyan); width: 16px; text-align: center; }
+
+        .capacity-bar-wrapper { margin-top: auto; margin-bottom: 1.25rem; }
+        .capacity-text { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.45rem; }
+        .progress-bar { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-full); overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent-cyan)); border-radius: var(--radius-full); }
+
+        .event-footer { display: flex; gap: 0.75rem; margin-top: auto; }
+        .event-footer .btn { flex: 1; }
+
+        /* Digital Tickets */
+        .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(370px, 1fr)); gap: 1.75rem; }
+        .digital-ticket-card { background: linear-gradient(145deg, #131b2e, #1a233a); border: 1px solid var(--border-glass-bright); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); transition: var(--transition); }
+        .digital-ticket-card:hover { transform: translateY(-5px); border-color: var(--accent-cyan); }
+
+        .ticket-header { background: linear-gradient(90deg, var(--primary), #3b82f6); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .ticket-header h4 { font-family: var(--font-heading); font-weight: 800; font-size: 1.15rem; color: white; }
+        .ticket-body { padding: 1.5rem; }
+        .ticket-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin-bottom: 1.25rem; }
+        .ticket-field label { display: block; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+        .ticket-field p { font-size: 0.9rem; font-weight: 600; color: white; }
+        .ticket-divider { height: 1px; background: dashed var(--border-glass-bright); margin: 1.25rem -1.5rem; }
+        .ticket-qr-section { display: flex; align-items: center; justify-content: space-between; }
+        .qr-box { background: white; padding: 6px; border-radius: 10px; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; }
+
+        /* Calendar Grid */
+        .calendar-wrapper { background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 2rem; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 1.5rem; }
+        .calendar-day-name { text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--text-dim); padding: 0.4rem; text-transform: uppercase; }
+        .calendar-date-cell { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-glass); border-radius: var(--radius-md); min-height: 95px; padding: 0.55rem; cursor: pointer; display: flex; flex-direction: column; transition: var(--transition); }
+        .calendar-date-cell:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--primary); }
+        .calendar-date-cell.today { border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08); }
+        .date-num { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .cal-event-dot { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: var(--primary); color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem; }
+        .stat-icon { width: 54px; height: 54px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .stat-icon.purple { background: rgba(99, 102, 241, 0.15); color: var(--primary-light); }
+        .stat-icon.cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+        .stat-icon.emerald { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+        .stat-info h3 { font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
+        .stat-info h2 { font-family: var(--font-heading); font-size: 1.85rem; font-weight: 800; margin-top: 2px; }
+
+        /* Tables */
+        .table-card { background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 2rem; }
+        .table-responsive { width: 100%; overflow-x: auto; }
+        .custom-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left; white-space: nowrap; }
+        .custom-table th { background: rgba(255, 255, 255, 0.03); padding: 1rem 1.25rem; color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border-glass); text-transform: uppercase; font-size: 0.78rem; vertical-align: middle; }
+        .custom-table td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-glass); vertical-align: middle; }
+        .custom-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(10px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.25s ease; }
+        .modal-card { background: var(--bg-surface); border: 1px solid var(--border-glass-bright); border-radius: var(--radius-lg); width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-card); }
+        .modal-card.wide { max-width: 860px; }
+        .modal-header { padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; }
+        .close-btn { background: rgba(255,255,255,0.06); border: none; color: var(--text-muted); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
+        .close-btn:hover { background: rgba(255,255,255,0.18); color: white; }
+        .modal-body { padding: 1.75rem; }
+
+        .form-group { margin-bottom: 1.25rem; width: 100%; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.45rem; text-transform: uppercase; }
+        .form-control { width: 100%; height: 44px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 0 1rem; color: white; font-size: 0.9rem; outline: none; transition: var(--transition); }
+        select.form-control option { background: var(--bg-surface); color: white; }
+        textarea.form-control { height: auto; min-height: 95px; padding: 0.75rem 1rem; }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); background: rgba(255, 255, 255, 0.08); }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
+
+        .password-wrapper { position: relative; width: 100%; }
+        .password-wrapper input { padding-right: 2.75rem; }
+        .toggle-password-icon { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); cursor: pointer; }
+        .toggle-password-icon:hover { color: white; }
+
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 4000; display: flex; flex-direction: column; gap: 0.75rem; }
+        .toast { background: var(--bg-surface); border: 1px solid var(--border-glass-bright); color: white; padding: 1rem 1.35rem; border-radius: var(--radius-md); box-shadow: var(--shadow-card); display: flex; align-items: center; gap: 0.85rem; min-width: 320px; animation: slideIn 0.3s cubic-bezier(0.34, 1.25, 0.64, 1); }
+        .toast.success { border-left: 4px solid var(--accent-emerald); }
+        .toast.info { border-left: 4px solid var(--accent-cyan); }
+        .toast.warning { border-left: 4px solid var(--accent-amber); }
+
+        .footer { background: rgba(8, 12, 21, 0.95); border-top: 1px solid var(--border-glass); padding: 1.75rem; text-align: center; font-size: 0.85rem; color: var(--text-dim); margin-top: auto; }
+
+        /* Portal Login Gateway Styles */
+        .portal-login-tab-btn.active { background: var(--primary) !important; color: white !important; box-shadow: 0 4px 12px var(--primary-glow); }
+        .portal-login-tab-btn:not(.active) { background: transparent !important; color: var(--text-muted) !important; }
+        .portal-login-tab-btn:not(.active):hover { color: white !important; background: rgba(255,255,255,0.06) !important; }
+        .role-radio-card { transition: all 0.2s ease; border: 1px solid var(--border-glass); }
+        .role-radio-card:has(input:checked) { border-color: var(--primary) !important; background: rgba(99, 102, 241, 0.14) !important; box-shadow: 0 0 12px var(--primary-glow); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 15px var(--primary-glow); } 100% { box-shadow: 0 0 30px var(--accent-cyan-glow); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+        @media (max-width: 1024px) {
+            .app-header { padding: 0.75rem 1.25rem; }
+            .events-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+        }
+
+        @media (max-width: 768px) {
+            .app-header { height: auto; padding: 1rem 1.25rem; flex-direction: column; align-items: stretch; gap: 0.85rem; }
+            .header-search { max-width: 100%; }
+            .header-controls { justify-content: space-between; }
+            .nav-tabs-bar { padding: 0.5rem 1rem; top: auto; }
+            .hero { padding: 2rem 1.5rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .events-grid { grid-template-columns: 1fr; }
+            .ticket-grid { grid-template-columns: 1fr; }
+            .calendar-grid { gap: 4px; }
+            .calendar-date-cell { min-height: 75px; padding: 0.35rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="app-header">
+        <a href="#" class="brand-container">
+            <div class="brand-logo-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="brand-text">
+                <h1>CampusPulse</h1>
+                <p>College Event Portal</p>
+            </div>
+        </a>
+
+        <!-- Global Search Bar -->
+        <div class="header-search">
+            <input type="text" id="searchInput" placeholder="Search events, venue, speakers, or departments...">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+
+        <!-- Controls & Profile -->
+        <div class="header-controls">
+            <div class="role-switcher">
+                <button class="role-btn active" data-role="student" id="roleBtnStudent">
+                    <i class="fa-solid fa-user-graduate"></i> Student
+                </button>
+                <button class="role-btn" data-role="faculty" id="roleBtnFaculty">
+                    <i class="fa-solid fa-chalkboard-user"></i> Faculty
+                </button>
+                <button class="role-btn" data-role="admin" id="roleBtnAdmin">
+                    <i class="fa-solid fa-user-shield"></i> Admin
+                </button>
+            </div>
+
+            <!-- Notifications Bell -->
+            <div class="notification-bell" id="notifBell">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-badge" id="notifCount">2</span>
+
+                <div class="notification-drawer" id="notifDrawer">
+                    <div class="notif-header">
+                        <h4>Notifications</h4>
+                        <span class="mark-all-read" id="markAllRead">Mark all read</span>
+                    </div>
+                    <div class="notif-list" id="notifList"></div>
+                </div>
+            </div>
+
+            <!-- Profile Widget -->
+            <div class="user-avatar-btn" id="userProfileBtn" onclick="if(state.isLoggedIn) openModal('portalLoginOverlay');" style="cursor: pointer;" title="Click to Switch Portal Account">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="User" class="avatar-img" id="userAvatar">
+                <div class="user-info-text">
+                    <div class="user-name" id="userNameDisplay">Ashu</div>
+                    <div class="user-role-label" id="userRoleDisplay">Student (CS-3rd Yr)</div>
+                </div>
+            </div>
+
+            <!-- Logout Button -->
+            <button class="btn btn-sm btn-danger logout-btn-inst" id="logoutHeaderBtn" style="display: none; height: 38px; gap: 0.45rem; border-radius: var(--radius-full);" onclick="handleLogout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs Bar -->
+    <nav class="nav-tabs-bar">
+        <button class="tab-btn active" data-tab="discover">
+            <i class="fa-solid fa-compass"></i> Discover Events
+        </button>
+        <button class="tab-btn" data-tab="calendar">
+            <i class="fa-regular fa-calendar-days"></i> Event Calendar
+        </button>
+        <button class="tab-btn" data-tab="tickets" id="ticketsTabBtn">
+            <i class="fa-solid fa-ticket"></i> My Tickets <span style="background: var(--primary); padding: 2px 7px; border-radius: 10px; font-size: 0.72rem; margin-left: 4px;" id="myTicketBadge">2</span>
+        </button>
+        <button class="tab-btn" data-tab="faculty" id="facultyTabBtn">
+            <i class="fa-solid fa-sliders"></i> Event Management
+        </button>
+        <button class="tab-btn restricted" data-tab="analytics" id="analyticsTabBtn">
+            <i class="fa-solid fa-lock"></i> Analytics Reports <span style="font-size: 0.65rem; background: rgba(236,72,153,0.3); padding: 2px 6px; border-radius: 10px; margin-left: 4px;">Faculty/Admin</span>
+        </button>
+    </nav>
+
+    <!-- Main Content Body -->
+    <main class="container">
+
+        <!-- 1. DISCOVER EVENTS TAB -->
+        <section class="tab-pane active" id="pane-discover">
+            <div class="hero">
+                <div class="hero-glow-orb"></div>
+                <div class="hero-content">
+                    <h1>College Management Event Portal</h1>
+                    <p>Discover upcoming hackathons, cultural festivals, sports tournaments, and guest lectures. Register online with one click and get your digital QR ticket pass instantly.</p>
+
+                    <!-- Real-Time Countdown Timer Widget -->
+                    <div class="countdown-container">
+                        <div style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; align-self: center; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-fire"></i> Next Big Event Starts In:
+                        </div>
+                        <div class="countdown-box"><div class="countdown-val" id="cdDays">09</div><div class="countdown-label">Days</div></div>
+                        <div class="countdown-box"><div class="countdown-val" id="cdHours">14</div><div class="countdown-label">Hours</div></div>
+                        <div class="countdown-box"><div class="countdown-val" id="cdMins">32</div><div class="countdown-label">Mins</div></div>
+                        <div class="countdown-box"><div class="countdown-val" id="cdSecs">45</div><div class="countdown-label">Secs</div></div>
+                    </div>
+
+                    <div class="hero-stats">
+                        <div class="hero-stat-item"><h3 id="statTotalEvents">7</h3><p>Active Programs</p></div>
+                        <div class="hero-stat-item"><h3 id="statTotalRegs">1,180</h3><p>Student RSVPs</p></div>
+                        <div class="hero-stat-item"><h3>6</h3><p>Departments</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar Filters -->
+            <div class="toolbar">
+                <div class="category-pills" id="categoryPills"></div>
+
+                <div class="filter-dropdowns">
+                    <select class="custom-select" id="deptFilter"></select>
+                    <select class="custom-select" id="statusFilter">
+                        <option value="all">All Statuses</option>
+                        <option value="Upcoming" selected>Upcoming Events</option>
+                        <option value="Completed">Completed Events</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Events Grid -->
+            <div class="events-grid" id="eventsContainer"></div>
+        </section>
+
+        <!-- 2. EVENT CALENDAR TAB -->
+        <section class="tab-pane" id="pane-calendar">
+            <div class="calendar-wrapper">
+                <div class="page-header" style="margin-bottom: 1rem;">
+                    <h3 id="calendarMonthYear" class="page-title">September 2026</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary btn-sm" id="prevMonthBtn"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                        <button class="btn btn-secondary btn-sm" id="todayMonthBtn">Today</button>
+                        <button class="btn btn-secondary btn-sm" id="nextMonthBtn">Next <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+        </section>
+
+        <!-- 3. MY TICKETS TAB -->
+        <section class="tab-pane" id="pane-tickets">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">My Registered Tickets</h1>
+                    <p class="page-subtitle">Present these digital passes at the event entrance for QR check-in scanning.</p>
+                </div>
+            </div>
+            <div class="ticket-grid" id="ticketsContainer"></div>
+        </section>
+
+        <!-- 4. FACULTY / ADMIN MANAGEMENT TAB -->
+        <section class="tab-pane" id="pane-faculty">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Event & Participant Management</h1>
+                    <p class="page-subtitle">Create, update, and manage campus programs and student attendance rosters.</p>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" id="openCreateEventModalBtn">
+                        <i class="fa-solid fa-plus"></i> Host New Event
+                    </button>
+                    <button class="btn btn-danger btn-sm logout-btn-inst" onclick="handleLogout()" style="display: none;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="stat-info"><h3>Hosted Programs</h3><h2 id="facHostedCount">7</h2></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon cyan"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-info"><h3>Total RSVPs</h3><h2 id="facTotalRsvps">1,214</h2></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon emerald"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="stat-info"><h3>Avg Attendance</h3><h2>88.4%</h2></div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <h4 style="font-family: var(--font-heading); font-weight: 700;">Department Event Management</h4>
+                    <button class="btn btn-secondary btn-sm" id="exportAllRostersBtn">
+                        <i class="fa-solid fa-file-csv"></i> Export All Data (CSV)
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Event Title</th>
+                                <th>Category</th>
+                                <th>Date & Time</th>
+                                <th>Venue</th>
+                                <th>RSVP / Capacity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="facultyEventsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. ANALYTICS & REPORTS TAB (RESTRICTED TO FACULTY / ADMIN) -->
+        <section class="tab-pane" id="pane-analytics">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title"><i class="fa-solid fa-chart-pie" style="color: var(--accent-pink);"></i> Faculty & Admin Analytics Dashboard</h1>
+                    <p class="page-subtitle">Restricted executive engagement metrics, department participation breakdown, venue fill rates, and student turnouts.</p>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="exportAnalyticsReportCSV()">
+                        <i class="fa-solid fa-file-csv"></i> Export Executive Report (CSV)
+                    </button>
+                    <span class="role-badge admin" style="font-size: 0.8rem; padding: 0.4rem 0.9rem; background: rgba(99,102,241,0.15); border: 1px solid var(--primary-light); color: #a5b4fc; border-radius: var(--radius-full);">
+                        <i class="fa-solid fa-shield-halved"></i> Faculty & Admin Secured Area
+                    </span>
+                    <button class="btn btn-danger btn-sm logout-btn-inst" onclick="handleLogout()" style="display: none;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Cards Row -->
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="stat-info">
+                        <h3>Campus Registrations</h3>
+                        <h2 id="analyticsTotalRegs">1,180</h2>
+                        <span style="font-size: 0.75rem; color: var(--accent-emerald);"><i class="fa-solid fa-arrow-trend-up"></i> +24% vs last month</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon cyan"><i class="fa-solid fa-building-circle-check"></i></div>
+                    <div class="stat-info">
+                        <h3>Avg Venue Fill Rate</h3>
+                        <h2 id="analyticsFillRate">86.4%</h2>
+                        <span style="font-size: 0.75rem; color: var(--accent-cyan);"><i class="fa-solid fa-circle-check"></i> Optimal Seat Utilization</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon emerald"><i class="fa-solid fa-trophy"></i></div>
+                    <div class="stat-info">
+                        <h3>Top Category</h3>
+                        <h2 id="analyticsTopCat">Tech Summit</h2>
+                        <span style="font-size: 0.75rem; color: var(--accent-amber);"><i class="fa-solid fa-fire"></i> High Student Demand</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pink" style="background: rgba(236,72,153,0.15); color: var(--accent-pink);"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="stat-info">
+                        <h3>Student Engagement</h3>
+                        <h2>94.2%</h2>
+                        <span style="font-size: 0.75rem; color: var(--accent-pink);"><i class="fa-solid fa-star"></i> Turnout Conversion</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Visualizations Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.75rem; margin-bottom: 2.5rem;">
+                <!-- Chart 1: Category Breakdown -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="font-family: var(--font-heading); font-weight: 700; color: white;"><i class="fa-solid fa-chart-pie" style="color: var(--primary-light); margin-right: 0.5rem;"></i> Registrations by Category</h4>
+                        <span style="font-size: 0.75rem; color: var(--text-dim);">Distribution</span>
+                    </div>
+                    <canvas id="categoryChart" height="230"></canvas>
+                </div>
+
+                <!-- Chart 2: Department Participation -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="font-family: var(--font-heading); font-weight: 700; color: white;"><i class="fa-solid fa-chart-column" style="color: var(--accent-cyan); margin-right: 0.5rem;"></i> Department Participation</h4>
+                        <span style="font-size: 0.75rem; color: var(--text-dim);">Student RSVPs</span>
+                    </div>
+                    <canvas id="departmentChart" height="230"></canvas>
+                </div>
+
+                <!-- Chart 3: Year-Wise Turnout -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="font-family: var(--font-heading); font-weight: 700; color: white;"><i class="fa-solid fa-users-rays" style="color: var(--accent-emerald); margin-right: 0.5rem;"></i> Academic Year Turnout</h4>
+                        <span style="font-size: 0.75rem; color: var(--text-dim);">1st-4th Year</span>
+                    </div>
+                    <canvas id="yearDistChart" height="230"></canvas>
+                </div>
+
+                <!-- Chart 4: Capacity vs RSVPs -->
+                <div style="grid-column: 1 / -1; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="font-family: var(--font-heading); font-weight: 700; color: white;"><i class="fa-solid fa-chart-simple" style="color: var(--accent-amber); margin-right: 0.5rem;"></i> Event Seat Capacity vs RSVPs</h4>
+                        <span style="font-size: 0.75rem; color: var(--text-dim);">Seat Utilization</span>
+                    </div>
+                    <canvas id="capacityVSrsvpChart" height="130"></canvas>
+                </div>
+
+                <!-- Chart 5: Monthly Trend -->
+                <div style="grid-column: 1 / -1; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="font-family: var(--font-heading); font-weight: 700; color: white;"><i class="fa-solid fa-arrow-trend-up" style="color: var(--accent-pink); margin-right: 0.5rem;"></i> 6-Month Registration Growth Velocity</h4>
+                        <span style="font-size: 0.75rem; color: var(--text-dim);">Monthly Trend</span>
+                    </div>
+                    <canvas id="trendChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <!-- Department Engagement Leaderboard Table -->
+            <div class="table-card">
+                <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h4 style="font-family: var(--font-heading); font-weight: 700;"><i class="fa-solid fa-trophy" style="color: var(--accent-amber);"></i> Department Engagement Leaderboard</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 2px;">Faculty department turnout ranking based on student registrations and seat fill rates.</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Department Name</th>
+                                <th>Events Hosted</th>
+                                <th>Total Student RSVPs</th>
+                                <th>Seat Fill Rate</th>
+                                <th>Status Badge</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deptLeaderboardTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 CampusPulse - College Management Event Portal | Password Secured Faculty & Admin Analytics</p>
+    </footer>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- ==================== INITIAL PORTAL LOGIN OVERLAY ==================== -->
+    <div class="modal-overlay" id="portalLoginOverlay" style="z-index: 5000; background: rgba(5, 8, 16, 0.94); backdrop-filter: blur(16px);">
+        <div class="modal-card" style="max-width: 520px; border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 20px 60px rgba(0,0,0,0.8); overflow: hidden;">
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(168, 85, 247, 0.28)); padding: 2rem 1.75rem 1.5rem; text-align: center; border-bottom: 1px solid var(--border-glass);">
+                <div style="width: 58px; height: 58px; border-radius: 18px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: inline-flex; align-items: center; justify-content: center; font-size: 1.75rem; color: white; margin-bottom: 0.85rem; box-shadow: 0 8px 24px var(--primary-glow);">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2 style="font-family: var(--font-heading); font-size: 1.65rem; font-weight: 800; color: white; margin-bottom: 0.25rem;">CampusPulse Portal Sign In</h2>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Select your login portal to access events, passes & administration</p>
+
+                <!-- Login Role Tabs -->
+                <div style="display: flex; gap: 0.5rem; background: rgba(0,0,0,0.4); padding: 0.35rem; border-radius: var(--radius-md); margin-top: 1.25rem; border: 1px solid var(--border-glass);">
+                    <button type="button" class="portal-login-tab-btn active" id="tabBtnStudent" onclick="switchLoginTab('student')" style="flex: 1; padding: 0.65rem 1rem; border: none; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: var(--transition);">
+                        <i class="fa-solid fa-user-graduate"></i> Student Login
+                    </button>
+                    <button type="button" class="portal-login-tab-btn" id="tabBtnAdmin" onclick="switchLoginTab('admin')" style="flex: 1; padding: 0.65rem 1rem; border: none; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: var(--transition);">
+                        <i class="fa-solid fa-shield-halved"></i> Faculty & Admin
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-body" style="padding: 1.75rem;">
+                <!-- Student Login Form / Dummy Profile -->
+                <div id="studentLoginSection">
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Student Profile" style="width: 58px; height: 58px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <h4 style="font-size: 1.1rem; font-weight: 700; color: white;" id="loginDummyName">Ashu</h4>
+                                <span class="badge badge-tech" style="font-size: 0.7rem;">CS - 3rd Yr</span>
+                            </div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.15rem;" id="loginDummyEmail">ashu@campus.edu • Roll ID: CS-2024-042</p>
+                            <div style="font-size: 0.75rem; color: var(--accent-emerald); margin-top: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+                                <i class="fa-solid fa-circle-check"></i> Dummy Student Profile Verified
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="portalStudentForm" onsubmit="event.preventDefault(); handlePortalStudentLogin(event);">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" class="form-control" id="loginStudentNameInput" value="Ashu" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Campus Email *</label>
+                            <input type="email" class="form-control" id="loginStudentEmailInput" value="ashu@campus.edu" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; height: 48px; font-size: 1rem; margin-top: 0.5rem; justify-content: center;">
+                            <i class="fa-solid fa-right-to-bracket"></i> Log In as Student (Ashu)
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Admin & Faculty Login Form -->
+                <div id="adminLoginSection" style="display: none;">
+                    <form id="portalAdminForm" onsubmit="event.preventDefault(); handlePortalAdminLogin(event);">
+                        <div class="form-group">
+                            <label>Select Account Role</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <label class="role-radio-card" style="background: rgba(255,255,255,0.04); border-radius: var(--radius-md); padding: 0.75rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.65rem;">
+                                    <input type="radio" name="portalRoleSelect" value="admin" checked style="accent-color: var(--primary);">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 0.88rem; color: white;">Dean Sarah Jenkins</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">Portal Admin</div>
+                                    </div>
+                                </label>
+                                <label class="role-radio-card" style="background: rgba(255,255,255,0.04); border-radius: var(--radius-md); padding: 0.75rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.65rem;">
+                                    <input type="radio" name="portalRoleSelect" value="faculty" style="accent-color: var(--primary);">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 0.88rem; color: white;">Dr. Aris Thorne</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">Faculty Host</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="portalAdminPassword">Admin / Faculty Password *</label>
+                            <div class="password-wrapper">
+                                <input type="password" class="form-control" id="portalAdminPassword" placeholder="Enter admin password..." required>
+                                <i class="fa-solid fa-eye toggle-password-icon" id="togglePortalPassIcon" onclick="togglePasswordVisibility('portalAdminPassword', 'togglePortalPassIcon')"></i>
+                            </div>
+                            <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 0.45rem; display: flex; align-items: center; gap: 0.35rem;">
+                                <i class="fa-solid fa-key" style="color: var(--accent-amber);"></i> Admin Password: <code style="background: rgba(255,255,255,0.1); padding: 0.15rem 0.4rem; border-radius: 4px;">aswathi123</code>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; height: 48px; font-size: 1rem; margin-top: 0.5rem; justify-content: center;">
+                            <i class="fa-solid fa-lock-open"></i> Log In as Admin / Faculty
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Faculty / Admin Password Authentication Modal -->
+    <div class="modal-overlay" id="adminAuthModal">
+        <div class="modal-card" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-lock" style="color: var(--accent-pink);"></i> Password Authentication</h3>
+                <button class="close-btn" onclick="closeModal('adminAuthModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                    Faculty & Admin authentication required to access Analytics Reports and host management controls.
+                </p>
+
+                <form id="adminAuthForm">
+                    <div class="form-group">
+                        <label for="adminAuthPassword">Faculty / Admin Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-control" id="adminAuthPassword" placeholder="Enter password..." required>
+                            <i class="fa-solid fa-eye toggle-password-icon" id="toggleAdminPassIcon" onclick="togglePasswordVisibility('adminAuthPassword', 'toggleAdminPassIcon')"></i>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fa-solid fa-key"></i> Unlock Access</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('adminAuthModal')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="modal-overlay" id="eventDetailModal">
+        <div class="modal-card wide">
+            <div class="modal-header">
+                <h3 id="modalEventTitle">Event Details</h3>
+                <button class="close-btn" onclick="closeModal('eventDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="eventDetailContent"></div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="modal-overlay" id="registrationModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Register for Event</h3>
+                <button class="close-btn" onclick="closeModal('registrationModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="registrationForm">
+                    <input type="hidden" id="regEventId">
+                    <div class="form-group">
+                        <label>Event Name</label>
+                        <input type="text" class="form-control" id="regEventTitleDisplay" readonly style="opacity: 0.8;">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" class="form-control" id="regStudentName" value="Ashu" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Roll / ID Number *</label>
+                            <input type="text" class="form-control" id="regRollNumber" value="CS-2024-042" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Department *</label>
+                            <select class="form-control" id="regDepartment" required>
+                                <option value="Computer Science" selected>Computer Science</option>
+                                <option value="Arts & Humanities">Arts & Humanities</option>
+                                <option value="Data Science">Data Science</option>
+                                <option value="Management">Management</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Year of Study *</label>
+                            <select class="form-control" id="regYear" required>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                                <option value="3rd Year" selected>3rd Year</option>
+                                <option value="4th Year">4th Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Campus Email *</label>
+                            <input type="email" class="form-control" id="regEmail" value="ashu@campus.edu" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" class="form-control" id="regPhone" value="+1 (555) 019-2834">
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fa-solid fa-check-circle"></i> Confirm Registration</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('registrationModal')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Host New Event Modal -->
+    <div class="modal-overlay" id="createEventModal">
+        <div class="modal-card wide">
+            <div class="modal-header">
+                <h3 id="createModalTitle">Host New College Event</h3>
+                <button class="close-btn" onclick="closeModal('createEventModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createEventForm">
+                    <div class="form-group">
+                        <label>Event Title *</label>
+                        <input type="text" class="form-control" id="eventTitleInput" placeholder="e.g. AI & Web3 Innovators Summit 2026" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category *</label>
+                            <select class="form-control" id="eventCategoryInput" required>
+                                <option value="Tech">Tech & Hackathons</option>
+                                <option value="Cultural">Cultural & Arts</option>
+                                <option value="Sports">Sports & Athletics</option>
+                                <option value="Seminars">Seminars & Talks</option>
+                                <option value="Workshops">Workshops</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Department *</label>
+                            <select class="form-control" id="eventDeptInput" required>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Arts & Humanities">Arts & Humanities</option>
+                                <option value="Physical Education">Physical Education</option>
+                                <option value="Data Science">Data Science</option>
+                                <option value="Management">Management</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" class="form-control" id="eventDateInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Timing *</label>
+                            <input type="text" class="form-control" id="eventTimeInput" placeholder="10:00 AM - 04:00 PM" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Specific Hall / Venue Location *</label>
+                            <input type="text" class="form-control" id="eventVenueInput" placeholder="e.g. Main Auditorium, Block C - 2nd Floor" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Max Seat Capacity *</label>
+                            <input type="number" class="form-control" id="eventCapacityInput" min="10" max="1000" value="100" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Banner Image URL</label>
+                        <input type="url" class="form-control" id="eventBannerInput" value="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80">
+                    </div>
+                    <div class="form-group">
+                        <label>Description *</label>
+                        <textarea class="form-control" id="eventDescInput" rows="3" placeholder="Provide complete program overview..." required></textarea>
+                    </div>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fa-solid fa-paper-plane"></i> Publish Event</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('createEventModal')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendee Roster Modal -->
+    <div class="modal-overlay" id="rosterModal">
+        <div class="modal-card wide">
+            <div class="modal-header">
+                <h3 id="rosterModalTitle">Event Registration Roster</h3>
+                <button class="close-btn" onclick="closeModal('rosterModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <p style="color: var(--text-muted); font-size: 0.85rem;" id="rosterSubCount">Total registered attendees: 0</p>
+                    <button class="btn btn-primary btn-sm" id="downloadRosterCsvBtn"><i class="fa-solid fa-download"></i> Download CSV Roster</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Student Name</th>
+                                <th>Roll Number</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                                <th>Email</th>
+                                <th>Reg Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rosterTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ==================== APPLICATION STATE & AUTH ENGINE ==================== -->
+    <script>
+        const REQUIRED_ADMIN_PASSWORD = "aswathi123";
+
+        const INITIAL_EVENTS = [
+            {
+                id: "evt-101",
+                title: "Hackathon 2026: Innovate & Elevate",
+                category: "Tech",
+                department: "Computer Science",
+                date: "2026-09-25",
+                time: "09:00 AM - 06:00 PM",
+                venue: "Main Auditorium, Block C - 2nd Floor",
+                buildingBlock: "Science & Tech Complex (Block C)",
+                roomNo: "Auditorium Hall 201",
+                maxCapacity: 150,
+                registeredCount: 112,
+                fee: "FREE for Students",
+                prizes: "$5,000 Cash Pool + Swag & T-Shirts",
+                teamLimit: "Teams of 2-4 Members",
+                coordinator: "Dr. Aris Thorne (aris@campus.edu | +1 555-0192)",
+                banner: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80",
+                description: "Join us for an intense 24-hour hackathon to solve real-world industry problems using AI, Web3, and IoT. Prizes worth $5,000 up for grabs with mentorship from lead engineers!",
+                rules: "1. Valid Student ID required.\n2. Laptops and chargers must be brought by participants.\n3. Original code must be written during hacking hours.\n4. Plagiarism leads to instant disqualification.",
+                agenda: [
+                    { time: "09:00 AM", task: "Check-in, Welcome Kit & Breakfast" },
+                    { time: "10:00 AM", task: "Keynote & Problem Statement Release" },
+                    { time: "11:00 AM", task: "Hacking Sprint Phase 1" },
+                    { time: "01:30 PM", task: "Networking Lunch & Mentor Check-ins" },
+                    { time: "05:00 PM", task: "Final Pitch Submissions & Live Demos" },
+                    { time: "06:00 PM", task: "Awards Ceremony & Cash Prize Distribution" }
+                ],
+                speakers: [
+                    { name: "Sarah Jenkins", role: "AI Research Lead, TechCorp", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" },
+                    { name: "Prof. Michael Lin", role: "Head of Robotics Lab", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" }
+                ],
+                organizer: "Dr. Aris Thorne (HOD, CS)",
+                status: "Upcoming",
+                featured: true
+            },
+            {
+                id: "evt-102",
+                title: "Euphoria '26 - Annual Cultural Fest",
+                category: "Cultural",
+                department: "Arts & Humanities",
+                date: "2026-10-02",
+                time: "04:00 PM - 10:00 PM",
+                venue: "Open Air Amphitheatre, Central Quad",
+                buildingBlock: "Arts & Cultural Zone",
+                roomNo: "Main Stage Amphitheatre",
+                maxCapacity: 500,
+                registeredCount: 420,
+                fee: "FREE Entry",
+                prizes: "Trophies & Performance Cash Awards",
+                teamLimit: "Solo & Group Entries",
+                coordinator: "Prof. Elena Rostova (elena@campus.edu | +1 555-0183)",
+                banner: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80",
+                description: "The biggest cultural extravaganza of the year featuring live band performances, street plays, dance battles, and fashion showcases.",
+                rules: "1. Campus ID mandatory.\n2. Outside food/drinks prohibited.\n3. Gate closes strictly at 06:00 PM.",
+                agenda: [
+                    { time: "04:00 PM", task: "Battle of the Bands" },
+                    { time: "06:00 PM", task: "Inter-College Dance Showcase" },
+                    { time: "08:00 PM", task: "Celebrity DJ Night & Concert" }
+                ],
+                speakers: [
+                    { name: "DJ Kairo", role: "Music Producer", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" }
+                ],
+                organizer: "Prof. Elena Rostova",
+                status: "Upcoming",
+                featured: true
+            },
+            {
+                id: "evt-103",
+                title: "Inter-Department Football Championship",
+                category: "Sports",
+                department: "Physical Education",
+                date: "2026-09-28",
+                time: "08:00 AM - 04:00 PM",
+                venue: "Campus Sports Complex, Ground A",
+                buildingBlock: "Athletic Grounds",
+                roomNo: "Football Pitch 1",
+                maxCapacity: 200,
+                registeredCount: 180,
+                fee: "FREE for Campus Teams",
+                prizes: "Championship Trophy & Medals",
+                teamLimit: "11 Players + Substitutes",
+                coordinator: "Coach David Vance (vance@campus.edu)",
+                banner: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80",
+                description: "Cheer for your department in the annual knockout football tournament. Trophy and medal presentations for winners and runners-up.",
+                rules: "1. Standard FIFA tournament regulations apply.\n2. Department football kit & studs mandatory.",
+                agenda: [
+                    { time: "08:00 AM", task: "Opening Ceremony & Captains Toss" },
+                    { time: "09:00 AM", task: "Quarter-Finals & Semi-Finals" },
+                    { time: "02:30 PM", task: "Grand Final Match & Trophy Ceremony" }
+                ],
+                speakers: [
+                    { name: "Coach David Vance", role: "Athletics Director", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80" }
+                ],
+                organizer: "Coach David Vance",
+                status: "Upcoming"
+            },
+            {
+                id: "evt-104",
+                title: "AI & Machine Learning Frontier Symposium",
+                category: "Seminars",
+                department: "Data Science",
+                date: "2026-10-10",
+                time: "10:00 AM - 01:00 PM",
+                venue: "Conference Room B, Admin Block - 1st Floor",
+                buildingBlock: "Administration Block",
+                roomNo: "Seminar Hall B-102",
+                maxCapacity: 80,
+                registeredCount: 64,
+                fee: "FREE with Registration",
+                prizes: "Verified E-Certificate of Participation",
+                teamLimit: "Individual Registration",
+                coordinator: "Dr. Maya Patel (maya@campus.edu)",
+                banner: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80",
+                description: "Exploring Large Language Models, Deep Learning architectures, and ethical AI deployment in modern enterprise systems.",
+                rules: "1. Q&A etiquette applies.\n2. E-certificates issued to attendees present for full duration.",
+                agenda: [
+                    { time: "10:00 AM", task: "LLM Architectures Keynote" },
+                    { time: "11:30 AM", task: "Autonomous Systems Ethics Panel" },
+                    { time: "12:30 PM", task: "Audience Q&A & Certificate Distribution" }
+                ],
+                speakers: [
+                    { name: "Dr. Vikram Seth", role: "Principal AI Scientist", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80" }
+                ],
+                organizer: "Dr. Maya Patel",
+                status: "Upcoming"
+            },
+            {
+                id: "evt-105",
+                title: "Full-Stack Web Development Bootcamp",
+                category: "Workshops",
+                department: "Computer Science",
+                date: "2026-10-15",
+                time: "02:00 PM - 05:00 PM",
+                venue: "Computer Lab 3, IT Building - 3rd Floor",
+                buildingBlock: "IT Center",
+                roomNo: "Lab 304",
+                maxCapacity: 60,
+                registeredCount: 58,
+                fee: "FREE for Students",
+                prizes: "Source Code Templates + Bootcamp Certificate",
+                teamLimit: "Individual Hands-on",
+                coordinator: "Prof. Alan Turing (turing@campus.edu)",
+                banner: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
+                description: "Hands-on workshop building production-ready web apps with React, Node.js, and modern CSS frameworks.",
+                rules: "1. Basic HTML/JS knowledge recommended.\n2. Lab PCs pre-configured with required software.",
+                agenda: [
+                    { time: "02:00 PM", task: "Modern JS & React Component Architecture" },
+                    { time: "03:30 PM", task: "API Integration & State Management" },
+                    { time: "04:30 PM", task: "Deployment to Cloud & Certificate Handout" }
+                ],
+                speakers: [
+                    { name: "Alex Mercer", role: "Senior Frontend Engineer", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80" }
+                ],
+                organizer: "Prof. Alan Turing",
+                status: "Upcoming"
+            }
+        ];
+
+        const INITIAL_TICKETS = [
+            {
+                id: "TKT-89021",
+                eventId: "evt-101",
+                studentName: "Ashu",
+                rollNumber: "CS-2024-042",
+                department: "Computer Science",
+                email: "ashu@campus.edu",
+                year: "3rd Year",
+                registeredAt: "2026-09-14 10:30 AM",
+                qrData: "CP-TKT-89021-CS2024042-EVT101",
+                seatNumber: "Seat A-42"
+            }
+        ];
+
+        const INITIAL_NOTIFICATIONS = [
+            { id: "notif-1", title: "Registration Confirmed!", message: "You registered for 'Hackathon 2026'. Digital pass TKT-89021 issued.", time: "10 mins ago", read: false, type: "success" }
+        ];
+
+        const DEPARTMENTS = ["All Departments", "Computer Science", "Arts & Humanities", "Physical Education", "Data Science", "Management", "Mechanical Engineering"];
+        const CATEGORIES = [
+            { id: "all", name: "All Events", icon: "fa-border-all" },
+            { id: "Tech", name: "Tech & Hackathons", icon: "fa-laptop-code" },
+            { id: "Cultural", name: "Cultural & Arts", icon: "fa-masks-theater" },
+            { id: "Sports", name: "Sports & Athletics", icon: "fa-trophy" },
+            { id: "Seminars", name: "Seminars & Talks", icon: "fa-microphone" },
+            { id: "Workshops", name: "Workshops", icon: "fa-chalkboard-teacher" }
+        ];
+
+        const state = {
+            events: JSON.parse(localStorage.getItem('cp_single_events')) || INITIAL_EVENTS,
+            tickets: JSON.parse(localStorage.getItem('cp_single_tickets')) || INITIAL_TICKETS,
+            notifications: JSON.parse(localStorage.getItem('cp_single_notifs')) || INITIAL_NOTIFICATIONS,
+            currentRole: 'student',
+            activeTab: 'discover',
+            activeCategory: 'all',
+            activeDept: 'All Departments',
+            activeStatus: 'Upcoming',
+            searchQuery: '',
+            calendarDate: new Date(2026, 8, 1),
+            isLoggedIn: false,
+            isAuthenticatedAdmin: false,
+            studentName: 'Ashu',
+            studentEmail: 'ashu@campus.edu',
+            pendingRoleOrTab: null,
+            charts: {}
+        };
+
+        function persistState() {
+            localStorage.setItem('cp_single_events', JSON.stringify(state.events));
+            localStorage.setItem('cp_single_tickets', JSON.stringify(state.tickets));
+            localStorage.setItem('cp_single_notifs', JSON.stringify(state.notifications));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            startCountdownTimer();
+            renderCategoryPills();
+            renderDepartmentDropdown();
+            renderAll();
+
+            if (!state.isLoggedIn) {
+                openModal('portalLoginOverlay');
+            }
+        });
+
+        // Password Toggle Function
+        window.togglePasswordVisibility = function(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        };
+
+        function startCountdownTimer() {
+            function updateClock() {
+                const now = new Date().getTime();
+                const target = new Date("2026-09-25T09:00:00").getTime();
+                const diff = target - now;
+
+                if (diff > 0) {
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    document.getElementById('cdDays').textContent = String(days).padStart(2, '0');
+                    document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+                    document.getElementById('cdMins').textContent = String(mins).padStart(2, '0');
+                    document.getElementById('cdSecs').textContent = String(secs).padStart(2, '0');
+                }
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchInput')?.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value.toLowerCase();
+                renderEvents();
+            });
+
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => switchRole(e.currentTarget.dataset.role));
+            });
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab));
+            });
+
+            document.getElementById('deptFilter')?.addEventListener('change', (e) => {
+                state.activeDept = e.target.value;
+                renderEvents();
+            });
+
+            document.getElementById('statusFilter')?.addEventListener('change', (e) => {
+                state.activeStatus = e.target.value;
+                renderEvents();
+            });
+
+            const notifBell = document.getElementById('notifBell');
+            notifBell?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('notifDrawer').classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => document.getElementById('notifDrawer')?.classList.remove('show'));
+
+            document.getElementById('markAllRead')?.addEventListener('click', () => {
+                state.notifications.forEach(n => n.read = true);
+                persistState();
+                renderNotifications();
+            });
+
+            document.getElementById('registrationForm')?.addEventListener('submit', handleRegistrationSubmit);
+            document.getElementById('createEventForm')?.addEventListener('submit', handleCreateEventSubmit);
+            document.getElementById('adminAuthForm')?.addEventListener('submit', handleAdminAuthSubmit);
+            document.getElementById('portalAdminForm')?.addEventListener('submit', handlePortalAdminLogin);
+            document.getElementById('portalStudentForm')?.addEventListener('submit', handlePortalStudentLogin);
+
+            document.getElementById('openCreateEventModalBtn')?.addEventListener('click', () => {
+                if (!state.isAuthenticatedAdmin) {
+                    state.pendingRoleOrTab = { action: 'modal', name: 'createEventModal' };
+                    openModal('adminAuthModal');
+                } else {
+                    openModal('createEventModal');
+                }
+            });
+
+            document.getElementById('prevMonthBtn')?.addEventListener('click', () => { state.calendarDate.setMonth(state.calendarDate.getMonth() - 1); renderCalendar(); });
+            document.getElementById('nextMonthBtn')?.addEventListener('click', () => { state.calendarDate.setMonth(state.calendarDate.getMonth() + 1); renderCalendar(); });
+            document.getElementById('todayMonthBtn')?.addEventListener('click', () => { state.calendarDate = new Date(2026, 8, 1); renderCalendar(); });
+
+            document.getElementById('exportAllRostersBtn')?.addEventListener('click', exportAllCSV);
+        }
+
+        // Admin & Faculty Password Authentication Submit Handler
+        window.handleAdminAuthSubmit = function(e) {
+            if (e) e.preventDefault();
+            const passInput = document.getElementById('adminAuthPassword')?.value.trim();
+
+            if (!passInput) {
+                showToast("Password Required", "Please enter the admin password.", "warning");
+                return false;
+            }
+
+            if (passInput === REQUIRED_ADMIN_PASSWORD || passInput.toLowerCase() === REQUIRED_ADMIN_PASSWORD.toLowerCase()) {
+                state.isLoggedIn = true;
+                state.isAuthenticatedAdmin = true;
+                document.getElementById('adminAuthModal')?.classList.remove('active');
+                const passField = document.getElementById('adminAuthPassword');
+                if (passField) passField.value = '';
+                showToast("Authentication Successful!", "Faculty & Admin access unlocked.", "success");
+
+                if (state.pendingRoleOrTab) {
+                    if (state.pendingRoleOrTab.role) {
+                        applyRoleSwitch(state.pendingRoleOrTab.role);
+                    } else if (state.pendingRoleOrTab.tab) {
+                        applyRoleSwitch(state.currentRole === 'student' ? 'faculty' : state.currentRole);
+                        applyTabSwitch(state.pendingRoleOrTab.tab);
+                    } else if (state.pendingRoleOrTab.action === 'modal') {
+                        applyRoleSwitch(state.currentRole === 'student' ? 'faculty' : state.currentRole);
+                        openModal(state.pendingRoleOrTab.name);
+                    }
+                    state.pendingRoleOrTab = null;
+                } else {
+                    applyRoleSwitch(state.currentRole === 'student' ? 'faculty' : state.currentRole);
+                }
+            } else {
+                showToast("Authentication Failed", "Incorrect password! Please try again.", "warning");
+            }
+            return false;
+        };
+
+        // Portal Login Switch Tab Handler
+        window.switchLoginTab = function(tab) {
+            const studentTab = document.getElementById('tabBtnStudent');
+            const adminTab = document.getElementById('tabBtnAdmin');
+            const studentSection = document.getElementById('studentLoginSection');
+            const adminSection = document.getElementById('adminLoginSection');
+
+            if (tab === 'student') {
+                studentTab?.classList.add('active');
+                adminTab?.classList.remove('active');
+                if (studentSection) studentSection.style.display = 'block';
+                if (adminSection) adminSection.style.display = 'none';
+            } else {
+                adminTab?.classList.add('active');
+                studentTab?.classList.remove('active');
+                if (adminSection) adminSection.style.display = 'block';
+                if (studentSection) studentSection.style.display = 'none';
+            }
+        };
+
+        window.handlePortalStudentLogin = function(e) {
+            if (e) e.preventDefault();
+            const studentName = document.getElementById('loginStudentNameInput')?.value.trim() || 'Ashu';
+            const studentEmail = document.getElementById('loginStudentEmailInput')?.value.trim() || 'ashu@campus.edu';
+
+            state.isLoggedIn = true;
+            state.isAuthenticatedAdmin = false;
+            state.studentName = studentName;
+            state.studentEmail = studentEmail;
+
+            const regNameField = document.getElementById('regStudentName');
+            const regEmailField = document.getElementById('regEmail');
+            if (regNameField) regNameField.value = studentName;
+            if (regEmailField) regEmailField.value = studentEmail;
+
+            applyRoleSwitch('student');
+            document.getElementById('portalLoginOverlay')?.classList.remove('active');
+            showToast("Welcome Back!", `Signed in as Student (${studentName})`, "success");
+            return false;
+        };
+
+        window.handlePortalAdminLogin = function(e) {
+            if (e) e.preventDefault();
+            const passInput = document.getElementById('portalAdminPassword')?.value.trim();
+            const selectedRole = document.querySelector('input[name="portalRoleSelect"]:checked')?.value || 'admin';
+
+            if (!passInput) {
+                showToast("Password Required", "Please enter the admin password.", "warning");
+                return false;
+            }
+
+            if (passInput === REQUIRED_ADMIN_PASSWORD || passInput.toLowerCase() === REQUIRED_ADMIN_PASSWORD.toLowerCase()) {
+                state.isLoggedIn = true;
+                state.isAuthenticatedAdmin = true;
+                const passField = document.getElementById('portalAdminPassword');
+                if (passField) passField.value = '';
+
+                applyRoleSwitch(selectedRole);
+                document.getElementById('portalLoginOverlay')?.classList.remove('active');
+                showToast("Authentication Successful!", `Unlocked ${selectedRole === 'admin' ? 'Portal Admin' : 'Faculty Host'} access.`, "success");
+            } else {
+                showToast("Authentication Failed", "Incorrect password! Please try again.", "warning");
+            }
+            return false;
+        };
+
+        window.handleLogout = function() {
+            state.isLoggedIn = false;
+            state.isAuthenticatedAdmin = false;
+            applyRoleSwitch('student');
+            applyTabSwitch('discover');
+            openModal('portalLoginOverlay');
+            showToast("Logged Out Successfully", "Returned to login gateway.", "info");
+        };
+
+        function switchRole(role) {
+            if ((role === 'faculty' || role === 'admin') && !state.isAuthenticatedAdmin) {
+                state.pendingRoleOrTab = { role: role };
+                openModal('adminAuthModal');
+                return;
+            }
+            applyRoleSwitch(role);
+        }
+
+        function applyRoleSwitch(role) {
+            state.currentRole = role;
+            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.role === role));
+
+            const names = { student: state.studentName || "Ashu", faculty: "Dr. Aris Thorne", admin: "Dean Sarah Jenkins" };
+            const roles = { student: "Student (CS-3rd Yr)", faculty: "Faculty Host (CS)", admin: "Portal Admin" };
+            document.getElementById('userNameDisplay').textContent = names[role];
+            document.getElementById('userRoleDisplay').textContent = roles[role];
+
+            const logoutBtn = document.getElementById('logoutHeaderBtn');
+            if (logoutBtn) {
+                logoutBtn.style.display = state.isLoggedIn ? 'inline-flex' : 'none';
+            }
+
+            const analyticsBtn = document.getElementById('analyticsTabBtn');
+            if (analyticsBtn) {
+                if (role === 'student' && !state.isAuthenticatedAdmin) {
+                    analyticsBtn.classList.add('restricted');
+                } else {
+                    analyticsBtn.classList.remove('restricted');
+                }
+            }
+
+            renderEvents();
+            renderFacultyTable();
+        }
+
+        function switchTab(tabId) {
+            if (tabId === 'analytics' && !state.isAuthenticatedAdmin) {
+                state.pendingRoleOrTab = { tab: tabId };
+                openModal('adminAuthModal');
+                return;
+            }
+            applyTabSwitch(tabId);
+        }
+
+        function applyTabSwitch(tabId) {
+            state.activeTab = tabId;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.getElementById(`pane-${tabId}`)?.classList.add('active');
+
+            if (tabId === 'calendar') renderCalendar();
+            if (tabId === 'tickets') renderTickets();
+            if (tabId === 'faculty') renderFacultyTable();
+            if (tabId === 'analytics') renderAnalytics();
+        }
+
+        function renderCategoryPills() {
+            const container = document.getElementById('categoryPills');
+            if (!container) return;
+            container.innerHTML = CATEGORIES.map(cat => `
+                <button class="pill ${cat.id === state.activeCategory ? 'active' : ''}" onclick="selectCategory('${cat.id}')">
+                    <i class="fa-solid ${cat.icon}"></i> ${cat.name}
+                </button>
+            `).join('');
+        }
+
+        window.selectCategory = function(catId) {
+            state.activeCategory = catId;
+            renderCategoryPills();
+            renderEvents();
+        };
+
+        function renderDepartmentDropdown() {
+            const select = document.getElementById('deptFilter');
+            if (select) select.innerHTML = DEPARTMENTS.map(d => `<option value="${d}">${d}</option>`).join('');
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('eventsContainer');
+            if (!container) return;
+
+            const filtered = state.events.filter(evt => {
+                const matchCat = state.activeCategory === 'all' || evt.category === state.activeCategory;
+                const matchDept = state.activeDept === 'All Departments' || evt.department === state.activeDept;
+                const matchStatus = state.activeStatus === 'all' || evt.status === state.activeStatus;
+                const matchSearch = !state.searchQuery || evt.title.toLowerCase().includes(state.searchQuery) || evt.venue.toLowerCase().includes(state.searchQuery) || evt.department.toLowerCase().includes(state.searchQuery);
+                return matchCat && matchDept && matchStatus && matchSearch;
+            });
+
+            document.getElementById('statTotalEvents').textContent = state.events.length;
+            document.getElementById('statTotalRegs').textContent = state.events.reduce((s, e) => s + e.registeredCount, 0).toLocaleString();
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-glass);"><h3>No matching events found</h3><p style="color: var(--text-muted); margin-top: 0.5rem;">Try adjusting your category filter or search keywords.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(evt => {
+                const pct = Math.round((evt.registeredCount / evt.maxCapacity) * 100);
+                const isFull = evt.registeredCount >= evt.maxCapacity;
+                const isRegistered = state.tickets.some(t => t.eventId === evt.id);
+
+                return `
+                    <div class="event-card">
+                        <div class="event-banner">
+                            <img src="${evt.banner}" alt="${evt.title}" onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80'">
+                            <span class="category-badge">${evt.category}</span>
+                            <span class="fee-badge">${evt.fee || 'FREE'}</span>
+                        </div>
+                        <div class="event-body">
+                            <div class="event-dept-tag"><i class="fa-solid fa-building-columns"></i> ${evt.department}</div>
+                            <h3 class="event-title">${evt.title}</h3>
+                            
+                            <div class="event-perks-row">
+                                ${evt.prizes ? `<span class="perk-chip"><i class="fa-solid fa-trophy" style="color: var(--accent-amber);"></i> ${evt.prizes.split('+')[0]}</span>` : ''}
+                                ${evt.teamLimit ? `<span class="perk-chip"><i class="fa-solid fa-users" style="color: var(--accent-cyan);"></i> ${evt.teamLimit}</span>` : ''}
+                            </div>
+
+                            <div class="event-meta">
+                                <div><i class="fa-regular fa-calendar-days"></i> ${evt.date} (${evt.time})</div>
+                                <div><i class="fa-solid fa-location-dot"></i> ${evt.venue}</div>
+                            </div>
+                            <div class="capacity-bar-wrapper">
+                                <div class="capacity-text"><span>Seat Capacity</span><span style="color: var(--accent-emerald); font-weight:600;">${evt.maxCapacity - evt.registeredCount} seats left</span></div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%"></div></div>
+                            </div>
+                            <div class="event-footer">
+                                <button class="btn btn-secondary" onclick="openEventDetailModal('${evt.id}')"><i class="fa-solid fa-circle-info"></i> Full Details</button>
+                                ${isRegistered ? `
+                                    <button class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="switchTab('tickets')"><i class="fa-solid fa-circle-check"></i> Registered</button>
+                                ` : `
+                                    <button class="btn btn-primary" ${isFull ? 'disabled style="opacity: 0.5;"' : ''} onclick="openRegistrationModal('${evt.id}')"><i class="fa-solid fa-ticket"></i> ${isFull ? 'Sold Out' : 'Register'}</button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.openEventDetailModal = function(id) {
+            const evt = state.events.find(e => e.id === id);
+            if (!evt) return;
+
+            const isRegistered = state.tickets.some(t => t.eventId === evt.id);
+
+            document.getElementById('modalEventTitle').textContent = evt.title;
+            document.getElementById('eventDetailContent').innerHTML = `
+                <div style="position: relative; height: 250px; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 1.5rem;">
+                    <img src="${evt.banner}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div style="position: absolute; inset: 0; background: linear-gradient(transparent, rgba(15,23,42,0.9));"></div>
+                    <div style="position: absolute; bottom: 1rem; left: 1.5rem; right: 1.5rem;">
+                        <span class="category-badge" style="position: static; display: inline-block;">${evt.category}</span>
+                        <h2 style="font-family: var(--font-heading); color: white; font-size: 1.6rem; font-weight: 800; margin-top: 0.4rem;">${evt.title}</h2>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.75rem;">
+                    <div>
+                        <h4 style="font-family: var(--font-heading); color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 0.6rem; font-weight:700;">
+                            <i class="fa-solid fa-align-left"></i> Program Overview
+                        </h4>
+                        <p style="color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.7; font-size: 0.92rem;">${evt.description}</p>
+
+                        ${evt.agenda && evt.agenda.length ? `
+                            <h4 style="font-family: var(--font-heading); color: var(--accent-amber); font-size: 1.1rem; margin-bottom: 0.8rem; font-weight:700;">
+                                <i class="fa-solid fa-clock"></i> Program Agenda & Schedule
+                            </h4>
+                            <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem;">
+                                ${evt.agenda.map(a => `
+                                    <div style="display: flex; gap: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 0.7rem 1rem; border-radius: var(--radius-md);">
+                                        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 0.85rem; min-width: 80px;">${a.time}</div>
+                                        <div style="font-size: 0.88rem;">${a.task}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        ${evt.speakers && evt.speakers.length ? `
+                            <h4 style="font-family: var(--font-heading); color: var(--primary-light); font-size: 1.1rem; margin-bottom: 0.8rem; font-weight:700;">
+                                <i class="fa-solid fa-microphone"></i> Keynote Speakers
+                            </h4>
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                                ${evt.speakers.map(s => `
+                                    <div style="display: flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border-glass); padding: 0.6rem 1rem; border-radius: var(--radius-full);">
+                                        <img src="${s.img}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                                        <div>
+                                            <div style="font-size: 0.85rem; font-weight: 700; color: white;">${s.name}</div>
+                                            <div style="font-size: 0.7rem; color: var(--text-dim);">${s.role}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        ${evt.rules ? `
+                            <h4 style="font-family: var(--font-heading); color: var(--accent-pink); font-size: 1.1rem; margin-bottom: 0.6rem; font-weight:700;">
+                                <i class="fa-solid fa-shield-halved"></i> Rules & Guidelines
+                            </h4>
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 1rem; border-radius: var(--radius-md); font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; white-space: pre-line;">
+                                ${evt.rules}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem; height: fit-content;">
+                        <h4 style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.5rem; color: white;">
+                            Venue & Specifications
+                        </h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.85rem; color: var(--text-muted);">
+                            <div><strong style="color: white;"><i class="fa-solid fa-building-columns" style="color: var(--accent-cyan);"></i> Department:</strong><br>${evt.department}</div>
+                            <div><strong style="color: white;"><i class="fa-regular fa-calendar-days" style="color: var(--accent-cyan);"></i> Date & Time:</strong><br>${evt.date} (${evt.time})</div>
+                            <div><strong style="color: white;"><i class="fa-solid fa-location-dot" style="color: var(--accent-cyan);"></i> Exact Venue:</strong><br>${evt.venue}</div>
+                            ${evt.buildingBlock ? `<div><strong style="color: white;"><i class="fa-solid fa-building" style="color: var(--accent-cyan);"></i> Campus Block:</strong><br>${evt.buildingBlock}</div>` : ''}
+                            ${evt.roomNo ? `<div><strong style="color: white;"><i class="fa-solid fa-door-open" style="color: var(--accent-cyan);"></i> Room/Hall No:</strong><br>${evt.roomNo}</div>` : ''}
+                            <div><strong style="color: white;"><i class="fa-solid fa-tag" style="color: var(--accent-emerald);"></i> Registration Fee:</strong><br><span style="color: var(--accent-emerald); font-weight:700;">${evt.fee || 'FREE'}</span></div>
+                            ${evt.prizes ? `<div><strong style="color: white;"><i class="fa-solid fa-trophy" style="color: var(--accent-amber);"></i> Prizes & Perks:</strong><br>${evt.prizes}</div>` : ''}
+                            ${evt.coordinator ? `<div><strong style="color: white;"><i class="fa-solid fa-user-gear" style="color: var(--accent-cyan);"></i> Event Coordinator:</strong><br>${evt.coordinator}</div>` : ''}
+                        </div>
+
+                        <div style="margin-top: 1.5rem;">
+                            ${isRegistered ? `
+                                <button class="btn btn-primary" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669);" onclick="closeModal('eventDetailModal'); switchTab('tickets');">View Digital Pass</button>
+                            ` : `
+                                <button class="btn btn-primary" style="width: 100%;" ${evt.registeredCount >= evt.maxCapacity ? 'disabled' : ''} onclick="closeModal('eventDetailModal'); openRegistrationModal('${evt.id}');">Register Now</button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+            openModal('eventDetailModal');
+        };
+
+        window.openRegistrationModal = function(id) {
+            const evt = state.events.find(e => e.id === id);
+            if (!evt) return;
+            document.getElementById('regEventId').value = evt.id;
+            document.getElementById('regEventTitleDisplay').value = evt.title;
+            openModal('registrationModal');
+        };
+
+        function handleRegistrationSubmit(e) {
+            e.preventDefault();
+            const evtId = document.getElementById('regEventId').value;
+            const evt = state.events.find(e => e.id === evtId);
+            if (!evt) return;
+
+            const tktId = `TKT-${Math.floor(10000 + Math.random() * 90000)}`;
+            const newTkt = {
+                id: tktId,
+                eventId: evt.id,
+                studentName: document.getElementById('regStudentName').value,
+                rollNumber: document.getElementById('regRollNumber').value,
+                department: document.getElementById('regDepartment').value,
+                year: document.getElementById('regYear').value,
+                email: document.getElementById('regEmail').value,
+                registeredAt: new Date().toLocaleDateString(),
+                qrData: `CP-${tktId}`,
+                seatNumber: `Seat A-${Math.floor(1 + Math.random() * evt.maxCapacity)}`
+            };
+
+            evt.registeredCount += 1;
+            state.tickets.push(newTkt);
+            state.notifications.unshift({ id: `n-${Date.now()}`, title: "Registration Confirmed", message: `Ticket ${tktId} issued for ${evt.title}`, time: "Just now", read: false, type: "success" });
+
+            persistState();
+            closeModal('registrationModal');
+            renderEvents();
+            renderNotifications();
+            showToast("Success!", `Ticket ${tktId} created. Check My Tickets tab.`, "success");
+            switchTab('tickets');
+        }
+
+        function renderTickets() {
+            const container = document.getElementById('ticketsContainer');
+            const myTicketBadge = document.getElementById('myTicketBadge');
+            if (!container) return;
+            if (myTicketBadge) myTicketBadge.textContent = state.tickets.length;
+
+            if (state.tickets.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-glass);"><h3>No ticket passes registered</h3><p style="color: var(--text-muted); margin-top: 0.5rem;">Explore upcoming events to register for programs.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = state.tickets.map(tkt => {
+                const evt = state.events.find(e => e.id === tkt.eventId) || { title: "Campus Program", date: "2026-10-01", venue: "Campus Hall" };
+                return `
+                    <div class="digital-ticket-card">
+                        <div class="ticket-header">
+                            <div><span style="font-size: 0.7rem; opacity: 0.8; text-transform: uppercase;">CAMPUS DIGITAL PASS</span><h4>${tkt.id}</h4></div>
+                            <span class="category-badge" style="position: static; background: rgba(255,255,255,0.2); color: white;">CONFIRMED</span>
+                        </div>
+                        <div class="ticket-body">
+                            <h3 style="font-family: var(--font-heading); margin-bottom: 1rem; color: white;">${evt.title}</h3>
+                            <div class="ticket-info-grid">
+                                <div class="ticket-field"><label>Student</label><p>${tkt.studentName}</p></div>
+                                <div class="ticket-field"><label>Roll Number</label><p>${tkt.rollNumber}</p></div>
+                                <div class="ticket-field"><label>Date</label><p>${evt.date}</p></div>
+                                <div class="ticket-field"><label>Seat</label><p style="color: var(--accent-cyan);">${tkt.seatNumber}</p></div>
+                            </div>
+                            <div class="ticket-divider"></div>
+                            <div class="ticket-qr-section">
+                                <div class="qr-box" id="qr-${tkt.id}"></div>
+                                <div style="text-align: right;"><div style="font-size:0.7rem; color: var(--text-dim);">ENTRY QR</div><div style="font-family: monospace; color: var(--accent-cyan); font-weight:700; margin-top:4px;">${tkt.qrData}</div></div>
+                            </div>
+                            <div style="margin-top: 1.25rem; display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="cancelTicket('${tkt.id}')"><i class="fa-solid fa-xmark"></i> Cancel RSVP</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            setTimeout(() => {
+                state.tickets.forEach(tkt => {
+                    const qEl = document.getElementById(`qr-${tkt.id}`);
+                    if (qEl && !qEl.hasChildNodes() && typeof QRCode !== 'undefined') {
+                        new QRCode(qEl, { text: tkt.qrData, width: 72, height: 72 });
+                    }
+                });
+            }, 50);
+        }
+
+        window.cancelTicket = function(id) {
+            const idx = state.tickets.findIndex(t => t.id === id);
+            if (idx > -1) {
+                const t = state.tickets[idx];
+                const e = state.events.find(evt => evt.id === t.eventId);
+                if (e && e.registeredCount > 0) e.registeredCount -= 1;
+                state.tickets.splice(idx, 1);
+                persistState();
+                renderEvents();
+                renderTickets();
+                showToast("Cancelled", `Ticket ${id} removed`, "warning");
+            }
+        };
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
+            const year = state.calendarDate.getFullYear();
+            const month = state.calendarDate.getMonth();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('calendarMonthYear').textContent = `${monthNames[month]} ${year}`;
+
+            let html = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => `<div class="calendar-day-name">${d}</div>`).join('');
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+
+            for (let i = 0; i < firstDay; i++) html += `<div class="calendar-date-cell" style="opacity: 0.2;"></div>`;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const evts = state.events.filter(e => e.date === dateStr);
+                html += `
+                    <div class="calendar-date-cell">
+                        <div class="date-num">${d}</div>
+                        ${evts.map(e => `<span class="cal-event-dot">${e.title}</span>`).join('')}
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        function renderFacultyTable() {
+            const tbody = document.getElementById('facultyEventsTableBody');
+            if (!tbody) return;
+            document.getElementById('facHostedCount').textContent = state.events.length;
+            document.getElementById('facTotalRsvps').textContent = state.events.reduce((s, e) => s + e.registeredCount, 0).toLocaleString();
+
+            tbody.innerHTML = state.events.map(e => `
+                <tr>
+                    <td style="font-weight: 600;">${e.title}</td>
+                    <td><span class="category-badge" style="position: static;">${e.category}</span></td>
+                    <td>${e.date}<br><span style="font-size: 0.75rem; color: var(--text-dim);">${e.time}</span></td>
+                    <td>${e.venue}</td>
+                    <td><strong>${e.registeredCount}</strong> / ${e.maxCapacity}</td>
+                    <td><span class="role-badge student">${e.status}</span></td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="openRosterModal('${e.id}')"><i class="fa-solid fa-users"></i> Roster</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.openRosterModal = function(id) {
+            const e = state.events.find(evt => evt.id === id);
+            if (!e) return;
+            const roster = state.tickets.filter(t => t.eventId === id);
+            document.getElementById('rosterModalTitle').textContent = `Roster: ${e.title}`;
+            document.getElementById('rosterSubCount').textContent = `Registered: ${roster.length}`;
+
+            document.getElementById('rosterTableBody').innerHTML = roster.length ? roster.map(r => `
+                <tr>
+                    <td style="font-family: monospace; color: var(--accent-cyan);">${r.id}</td>
+                    <td>${r.studentName}</td>
+                    <td>${r.rollNumber}</td>
+                    <td>${r.department}</td>
+                    <td>${r.year}</td>
+                    <td>${r.email}</td>
+                    <td>${r.registeredAt}</td>
+                </tr>
+            `).join('') : `<tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 2rem;">No registrations recorded yet.</td></tr>`;
+
+            openModal('rosterModal');
+        };
+
+        function handleCreateEventSubmit(ev) {
+            ev.preventDefault();
+            const newE = {
+                id: `evt-${Date.now().toString().slice(-4)}`,
+                title: document.getElementById('eventTitleInput').value,
+                category: document.getElementById('eventCategoryInput').value,
+                department: document.getElementById('eventDeptInput').value,
+                date: document.getElementById('eventDateInput').value,
+                time: document.getElementById('eventTimeInput').value,
+                venue: document.getElementById('eventVenueInput').value,
+                maxCapacity: parseInt(document.getElementById('eventCapacityInput').value, 10),
+                registeredCount: 0,
+                fee: "FREE for Students",
+                banner: document.getElementById('eventBannerInput').value || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80',
+                description: document.getElementById('eventDescInput').value,
+                organizer: 'Faculty Office',
+                status: 'Upcoming'
+            };
+
+            state.events.unshift(newE);
+            persistState();
+            closeModal('createEventModal');
+            renderEvents();
+            renderFacultyTable();
+            showToast("Published!", `'${newE.title}' published successfully.`, "success");
+        }
+
+        function exportAllCSV() {
+            let csv = "data:text/csv;charset=utf-8,TicketID,EventTitle,StudentName,RollNumber,Department,Year,Email\n";
+            state.tickets.forEach(r => {
+                const e = state.events.find(evt => evt.id === r.eventId);
+                csv += `"${r.id}","${e ? e.title : ''}","${r.studentName}","${r.rollNumber}","${r.department}","${r.year}","${r.email}"\n`;
+            });
+            const link = document.createElement("a");
+            link.href = encodeURI(csv);
+            link.download = "CampusPulse_Master_Roster.csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function renderAnalytics() {
+            if (typeof Chart === 'undefined') return;
+
+            // KPI Summary Stats Update
+            const totalRegs = state.events.reduce((s, e) => s + e.registeredCount, 0);
+            const totalCap = state.events.reduce((s, e) => s + e.maxCapacity, 0);
+            const avgFill = totalCap > 0 ? Math.round((totalRegs / totalCap) * 100) : 0;
+
+            const totalRegsEl = document.getElementById('analyticsTotalRegs');
+            if (totalRegsEl) totalRegsEl.textContent = totalRegs.toLocaleString();
+
+            const fillRateEl = document.getElementById('analyticsFillRate');
+            if (fillRateEl) fillRateEl.textContent = `${avgFill}%`;
+
+            const catCounts = {};
+            state.events.forEach(e => catCounts[e.category] = (catCounts[e.category] || 0) + e.registeredCount);
+            const topCatKey = Object.keys(catCounts).reduce((a, b) => (catCounts[a] || 0) > (catCounts[b] || 0) ? a : b, 'Tech');
+            const topCatEl = document.getElementById('analyticsTopCat');
+            if (topCatEl) topCatEl.textContent = topCatKey;
+
+            // 1. Doughnut Chart: Category Breakdown
+            const catCtx = document.getElementById('categoryChart')?.getContext('2d');
+            if (catCtx) {
+                if (state.charts.c1) state.charts.c1.destroy();
+                state.charts.c1 = new Chart(catCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(catCounts),
+                        datasets: [{
+                            data: Object.values(catCounts),
+                            backgroundColor: ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#06b6d4'],
+                            borderWidth: 2,
+                            borderColor: '#131b2e'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } }
+                    }
+                });
+            }
+
+            // 2. Bar Chart: Department Breakdown
+            const deptCtx = document.getElementById('departmentChart')?.getContext('2d');
+            if (deptCtx) {
+                const deptCounts = {};
+                state.events.forEach(e => deptCounts[e.department] = (deptCounts[e.department] || 0) + e.registeredCount);
+                if (state.charts.c2) state.charts.c2.destroy();
+                state.charts.c2 = new Chart(deptCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(deptCounts),
+                        datasets: [{
+                            label: 'Student RSVPs',
+                            data: Object.values(deptCounts),
+                            backgroundColor: 'rgba(6, 182, 212, 0.75)',
+                            borderColor: '#06b6d4',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } }
+                    }
+                });
+            }
+
+            // 3. Polar Area Chart: Academic Year Turnout
+            const yearCtx = document.getElementById('yearDistChart')?.getContext('2d');
+            if (yearCtx) {
+                const yearCounts = { "1st Year": 140, "2nd Year": 260, "3rd Year": 490, "4th Year": 290 };
+                state.tickets.forEach(t => {
+                    if (yearCounts[t.year] !== undefined) yearCounts[t.year]++;
+                });
+                if (state.charts.c4) state.charts.c4.destroy();
+                state.charts.c4 = new Chart(yearCtx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: Object.keys(yearCounts),
+                        datasets: [{
+                            data: Object.values(yearCounts),
+                            backgroundColor: ['rgba(99, 102, 241, 0.75)', 'rgba(6, 182, 212, 0.75)', 'rgba(16, 185, 129, 0.75)', 'rgba(245, 158, 11, 0.75)'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } },
+                        scales: { r: { ticks: { display: false }, grid: { color: 'rgba(255,255,255,0.05)' } } }
+                    }
+                });
+            }
+
+            // 4. Grouped Bar Chart: Capacity vs RSVPs
+            const capCtx = document.getElementById('capacityVSrsvpChart')?.getContext('2d');
+            if (capCtx) {
+                const titles = state.events.map(e => e.title.length > 18 ? e.title.slice(0, 15) + '...' : e.title);
+                const rsvps = state.events.map(e => e.registeredCount);
+                const capacities = state.events.map(e => e.maxCapacity);
+
+                if (state.charts.c5) state.charts.c5.destroy();
+                state.charts.c5 = new Chart(capCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: titles,
+                        datasets: [
+                            { label: 'Registered RSVPs', data: rsvps, backgroundColor: '#10b981', borderRadius: 4 },
+                            { label: 'Total Capacity', data: capacities, backgroundColor: 'rgba(255, 255, 255, 0.12)', borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: '#94a3b8' } } },
+                        scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } }
+                    }
+                });
+            }
+
+            // 5. Line Chart: 6-Month Velocity Trend
+            const trendCtx = document.getElementById('trendChart')?.getContext('2d');
+            if (trendCtx) {
+                if (state.charts.c3) state.charts.c3.destroy();
+                state.charts.c3 = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                        datasets: [{
+                            label: 'Campus Registrations Trend',
+                            data: [210, 430, 680, 920, totalRegs, totalRegs + 320],
+                            borderColor: '#6366f1',
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                            pointBackgroundColor: '#818cf8',
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: '#94a3b8' } } },
+                        scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } }
+                    }
+                });
+            }
+
+            // Render Leaderboard Table
+            renderDeptLeaderboard();
+        }
+
+        function renderDeptLeaderboard() {
+            const tbody = document.getElementById('deptLeaderboardTableBody');
+            if (!tbody) return;
+
+            const depts = {};
+            DEPARTMENTS.filter(d => d !== 'All Departments').forEach(dept => {
+                depts[dept] = { name: dept, eventsCount: 0, rsvps: 0, totalCapacity: 0 };
+            });
+
+            state.events.forEach(e => {
+                if (!depts[e.department]) {
+                    depts[e.department] = { name: e.department, eventsCount: 0, rsvps: 0, totalCapacity: 0 };
+                }
+                depts[e.department].eventsCount++;
+                depts[e.department].rsvps += e.registeredCount;
+                depts[e.department].totalCapacity += e.maxCapacity;
+            });
+
+            const sorted = Object.values(depts).sort((a, b) => b.rsvps - a.rsvps);
+
+            tbody.innerHTML = sorted.map((d, idx) => {
+                const fillPct = d.totalCapacity > 0 ? Math.round((d.rsvps / d.totalCapacity) * 100) : 0;
+                let badgeClass = "student";
+                let badgeText = "Active Host";
+                if (idx === 0) { badgeClass = "admin"; badgeText = "🔥 Top Department"; }
+                else if (fillPct >= 80) { badgeClass = "faculty"; badgeText = "⚡ High Turnout"; }
+
+                return `
+                    <tr>
+                        <td style="font-weight: 700; color: white;">
+                            <span style="color: var(--accent-cyan); margin-right: 8px;">#${idx + 1}</span> ${d.name}
+                        </td>
+                        <td>${d.eventsCount} Programs</td>
+                        <td><strong>${d.rsvps.toLocaleString()}</strong> RSVPs</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span>${fillPct}%</span>
+                                <div style="flex: 1; max-width: 100px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                                    <div style="width: ${fillPct}%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent-cyan)); border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="role-badge ${badgeClass}">${badgeText}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.exportAnalyticsReportCSV = function() {
+            let csv = "data:text/csv;charset=utf-8,Department,EventsHosted,TotalRSVPs,SeatCapacity,FillRatePct\n";
+            DEPARTMENTS.filter(d => d !== 'All Departments').forEach(dept => {
+                const evts = state.events.filter(e => e.department === dept);
+                const rsvps = evts.reduce((s, e) => s + e.registeredCount, 0);
+                const cap = evts.reduce((s, e) => s + e.maxCapacity, 0);
+                const pct = cap > 0 ? Math.round((rsvps / cap) * 100) : 0;
+                csv += `"${dept}","${evts.length}","${rsvps}","${cap}","${pct}%"\n`;
+            });
+
+            const link = document.createElement("a");
+            link.href = encodeURI(csv);
+            link.download = "CampusPulse_Executive_Analytics_Summary.csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Report Exported", "Executive Analytics CSV report downloaded successfully.", "success");
+        };
+
+        function renderNotifications() {
+            const list = document.getElementById('notifList');
+            const count = document.getElementById('notifCount');
+            if (!list) return;
+
+            const unread = state.notifications.filter(n => !n.read).length;
+            if (count) { count.textContent = unread; count.style.display = unread > 0 ? 'flex' : 'none'; }
+
+            list.innerHTML = state.notifications.map(n => `
+                <div class="notif-item ${n.read ? '' : 'unread'}">
+                    <div class="notif-icon ${n.type}"><i class="fa-solid fa-bell"></i></div>
+                    <div><h5>${n.title}</h5><p style="font-size:0.75rem; color: var(--text-muted);">${n.message}</p></div>
+                </div>
+            `).join('');
+        }
+
+        function renderAll() {
+            renderEvents();
+            renderNotifications();
+        }
+
+        window.openModal = function(id) { document.getElementById(id)?.classList.add('active'); };
+        window.closeModal = function(id) {
+            if (id === 'portalLoginOverlay' && !state.isLoggedIn) {
+                showToast("Sign In Required", "Please log in to access the portal.", "warning");
+                return;
+            }
+            document.getElementById(id)?.classList.remove('active');
+        };
+
+        window.showToast = function(title, message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<div><strong>${title}</strong><p style="font-size: 0.78rem; color: var(--text-muted);">${message}</p></div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        };
+    </script>
+</body>
+</html>
